@@ -8,6 +8,7 @@ add_library(hclib
     include/hclib/hc_def.h
     include/hclib/hc_allocator.h
     include/hclib/hc_list.h
+    src/memory.h
     src/hc_list.c
 )
 target_include_directories(hclib PUBLIC include)

@@ -9,6 +9,7 @@ extern "C" {
 #include <stdbool.h>
 
 #include "hc_def.h"
+#include "hc_allocator.h"
 
 struct hc_list_node {
     void *               data;
@@ -16,7 +17,10 @@ struct hc_list_node {
 };
 
 struct hc_list {
-    void                 (*destroy)(void *data);
+    struct hc_allocator  allocator;
+
+    void *               destroy_user_pointer;
+    void                 (*destroy)(void *user_pointer, void *data);
 
     struct hc_list_node *head;
     struct hc_list_node *tail;
@@ -29,7 +33,10 @@ static struct hc_list_node *hc_list_node_get_next(struct hc_list_node const *nod
 static bool                 hc_list_node_is_head(struct hc_list_node const *node, struct hc_list const *list);
 static bool                 hc_list_node_is_tail(struct hc_list_node const *node);
 
-HC_API void                 hc_list_init(struct hc_list *list, void (*destroy)(void *data));
+HC_API void                 hc_list_init(struct hc_list *list,
+                                         struct hc_allocator const *allocator,
+                                         void *destroy_user_pointer,
+                                         void (*destroy)(void *user_pointer, void *data));
 HC_API void                 hc_list_destroy(struct hc_list *list);
 
 HC_API bool                 hc_list_insert_next(struct hc_list *list, struct hc_list_node *node, void *data);

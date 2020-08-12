@@ -12,12 +12,12 @@ struct email {
 static struct email *email_create(char const *recipient, char const *message);
 static void          email_destroy(struct email *email);
 
-static void          list_destroy_email(void *data);
+static void          list_destroy_email(void *user_pointer, void *data);
 
 int main(int argc, char *argv[])
 {
     struct hc_list email_chain;
-    hc_list_init(&email_chain, list_destroy_email);
+    hc_list_init(&email_chain, NULL, NULL, list_destroy_email);
 
     char const *const messages[] = {
         "u big nerd ;^)", "hey", "bob", "how", "are", "ya"
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "couldn't remove an email from the head of the list!\n");
         return EXIT_FAILURE;
     }
-    list_destroy_email(offensive_email);
+    list_destroy_email(NULL, offensive_email);
 
     printf("reading %zu emails in a chain...\n\n", hc_list_get_size(&email_chain));
     struct hc_list_node *node = hc_list_get_head(&email_chain);
@@ -106,7 +106,7 @@ static void email_destroy(struct email *const email)
     free(email);
 }
 
-static void list_destroy_email(void *const data)
+static void list_destroy_email(void *const user_pointer, void *const data)
 {
     email_destroy(data);
 }

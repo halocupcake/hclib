@@ -3,12 +3,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-void hc_list_init(struct hc_list *const list, void (*const destroy)(void *data))
+void hc_list_init(struct hc_list *const list,
+                  struct hc_allocator const *const allocator,
+                  void *const destroy_user_pointer,
+                  void (*const destroy)(void *user_pointer, void *data))
 {
-    list->size = 0;
+    memcpy(&list->allocator, allocator, sizeof(struct hc_allocator));
+    list->destroy_user_pointer = destroy_user_pointer;
+    list->destroy = destroy;
     list->head = NULL;
     list->tail = NULL;
-    list->destroy = destroy;
+    list->size = 0;
 }
 
 void hc_list_destroy(struct hc_list *const list)
@@ -16,7 +21,7 @@ void hc_list_destroy(struct hc_list *const list)
     while (list->size > 0) {
         void *data;
         if (hc_list_remove_next(list, NULL, &data) && list->destroy)
-            list->destroy(data);
+            list->destroy(list->destroy_user_pointer, data);
     }
     memset(list, 0, sizeof(struct hc_list));
 }
