@@ -17,7 +17,7 @@ static void          list_destroy_email(void *user_pointer, void *data);
 int main(int argc, char *argv[])
 {
     struct hc_list email_chain;
-    hc_list_init(&email_chain, NULL, NULL, list_destroy_email);
+    hc_list_init(&email_chain, NULL, list_destroy_email);
 
     char const *const messages[] = {
         "u big nerd ;^)", "hey", "bob", "how", "are", "ya"
@@ -31,20 +31,21 @@ int main(int argc, char *argv[])
             return EXIT_FAILURE;
         }
 
-        struct hc_list_node *tail = hc_list_get_tail(&email_chain);
-        if (!hc_list_insert_next(&email_chain, tail, email)) {
+        struct hc_list_node *email_node = hc_list_node_create(NULL, email);
+        if (!hc_list_insert_next(&email_chain, hc_list_get_tail(&email_chain), email_node)) {
             fprintf(stderr, "couldn't insert an email into the list!\n");
             return EXIT_FAILURE;
         }
     }
 
     // oops we dont want to send that first part to bobby boy
-    void *offensive_email;
-    if (!hc_list_remove_next(&email_chain, NULL, &offensive_email)) {
+    struct hc_list_node *offensive_email = hc_list_remove_next(&email_chain, NULL);
+    if (!offensive_email) {
         fprintf(stderr, "couldn't remove an email from the head of the list!\n");
         return EXIT_FAILURE;
     }
-    list_destroy_email(NULL, offensive_email);
+    list_destroy_email(NULL, offensive_email->data);
+    hc_list_node_destroy(offensive_email, NULL);
 
     printf("reading %zu emails in a chain...\n\n", hc_list_get_size(&email_chain));
     struct hc_list_node *node = hc_list_get_head(&email_chain);
@@ -64,7 +65,7 @@ int main(int argc, char *argv[])
     }
     printf("\nalright that's all of the emails\n");
 
-    hc_list_destroy(&email_chain);
+    hc_list_destroy(&email_chain, NULL);
 
     return 0;
 }
