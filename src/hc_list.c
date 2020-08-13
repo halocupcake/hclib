@@ -6,7 +6,7 @@
 
 struct hc_list_node *hc_list_node_create(struct hc_allocator const *const allocator, void *const data)
 {
-    struct hc_list_node *node = memory_allocate(allocator, sizeof(struct hc_list_node));
+    struct hc_list_node *const node = memory_allocate(allocator, sizeof(struct hc_list_node));
     if (!node)
         return NULL;
 
@@ -17,7 +17,7 @@ struct hc_list_node *hc_list_node_create(struct hc_allocator const *const alloca
 
 void *hc_list_node_destroy(struct hc_list_node *const node, struct hc_allocator const *const allocator)
 {
-    void *data = node->data;
+    void *const data = node->data;
     memory_free(allocator, node);
     return data;
 }
@@ -36,9 +36,9 @@ void hc_list_init(struct hc_list *const list,
 void hc_list_destroy(struct hc_list *const list, struct hc_allocator const *const allocator)
 {
     while (list->size > 0) {
-        struct hc_list_node *node = hc_list_remove_next(list, NULL);
+        struct hc_list_node *const node = hc_list_remove_next(list, NULL);
 
-        void *data = hc_list_node_destroy(node, allocator);
+        void *const data = hc_list_node_destroy(node, allocator);
         if (list->destroy)
             list->destroy(list->destroy_user_pointer, data);
     }
