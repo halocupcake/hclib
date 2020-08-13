@@ -6,6 +6,7 @@ option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
 add_library(hclib
     include/hclib/hc_def.h
+    include/hclib/hc_macros.h
     include/hclib/hc_allocator.h
     include/hclib/hc_list.h
     src/memory.h
