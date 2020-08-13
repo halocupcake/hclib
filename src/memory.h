@@ -23,7 +23,11 @@ static inline void *memory_allocate_aligned(struct hc_allocator const *const all
     if (allocator)
         return allocator->allocate_aligned(allocator->user_pointer, size, alignment);
     else
+#if defined(_MSC_VER) || defined(__MINGW32__)
+        return _aligned_malloc(alignment, size); // fuck you Windows
+#else
         return aligned_alloc(alignment, size);
+#endif
 }
 
 static inline void *memory_reallocate(struct hc_allocator const *const allocator, void *const data, size_t size)
