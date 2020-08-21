@@ -4,43 +4,41 @@
 
 #include "memory.h"
 
-struct hc_list_node *hc_list_node_create(struct hc_allocator const *const allocator, void *const data)
+struct hc_list_node *hc_list_node_allocate(struct hc_allocator const *const allocator)
 {
-    struct hc_list_node *const node = memory_allocate(allocator, sizeof(struct hc_list_node));
-    if (!node)
-        return NULL;
-
-    node->data = data;
-
-    return node;
+    return memory_allocate(allocator, sizeof(struct hc_list_node));
 }
 
-void *hc_list_node_destroy(struct hc_list_node *const node, struct hc_allocator const *const allocator)
+void hc_list_node_free(struct hc_list_node *const node, struct hc_allocator const *const allocator)
 {
-    void *const data = node->data;
     memory_free(allocator, node);
-    return data;
 }
 
-void hc_list_init(struct hc_list *const list,
-                  void *const destroy_user_pointer,
-                  void (*const destroy)(void *user_pointer, void *data))
+void hc_list_node_init(struct hc_list_node *const node, void *const data)
 {
-    list->destroy_user_pointer = destroy_user_pointer;
-    list->destroy = destroy;
+    node->data = data;
+    node->next = NULL;
+}
+
+void hc_list_init(struct hc_list *const list)
+{
     list->head = NULL;
     list->tail = NULL;
     list->size = 0;
 }
 
-void hc_list_destroy(struct hc_list *const list, struct hc_allocator const *const allocator)
+void hc_list_destroy(struct hc_list *const list,
+                     struct hc_destructor const *const data_destructor,
+                     struct hc_allocator const *const node_allocator)
 {
     while (list->size > 0) {
         struct hc_list_node *const node = hc_list_remove_next(list, NULL);
 
-        void *const data = hc_list_node_destroy(node, allocator);
-        if (list->destroy)
-            list->destroy(list->destroy_user_pointer, data);
+        void *const data = node->data;
+
+        hc_list_node_free(node, node_allocator);
+        if (data_destructor)
+            data_destructor->destructor(data_destructor->user_pointer, data);
     }
 
     memset(list, 0, sizeof(struct hc_list));

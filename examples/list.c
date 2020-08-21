@@ -11,13 +11,12 @@ struct email {
 
 static struct email *email_create(char const *recipient, char const *message);
 static void          email_destroy(struct email *email);
-
-static void          list_destroy_email(void *user_pointer, void *data);
+static void          email_destructor(void *user_pointer, void *data);
 
 int main(int argc, char *argv[])
 {
     struct hc_list email_chain;
-    hc_list_init(&email_chain, NULL, list_destroy_email);
+    hc_list_init(&email_chain);
 
     char const *const messages[] = {
         "u big nerd ;^)", "hey", "bob", "how", "are", "ya"
@@ -31,7 +30,13 @@ int main(int argc, char *argv[])
             return EXIT_FAILURE;
         }
 
-        struct hc_list_node *email_node = hc_list_node_create(NULL, email);
+        struct hc_list_node *email_node = hc_list_node_allocate(NULL);
+        if (!email_node) {
+            fprintf(stderr, "couldn't create an email node!\n");
+            return EXIT_FAILURE;
+        }
+        hc_list_node_init(email_node, email);
+
         if (!hc_list_insert_next(&email_chain, hc_list_get_tail(&email_chain), email_node)) {
             fprintf(stderr, "couldn't insert an email into the list!\n");
             return EXIT_FAILURE;
@@ -44,8 +49,8 @@ int main(int argc, char *argv[])
         fprintf(stderr, "couldn't remove an email from the head of the list!\n");
         return EXIT_FAILURE;
     }
-    list_destroy_email(NULL, offensive_email->data);
-    hc_list_node_destroy(offensive_email, NULL);
+    email_destroy((struct email *const)hc_list_node_get_data(offensive_email));
+    hc_list_node_free(offensive_email, NULL);
 
     printf("reading %zu emails in a chain...\n\n", hc_list_get_size(&email_chain));
     struct hc_list_node *node = hc_list_get_head(&email_chain);
@@ -65,7 +70,9 @@ int main(int argc, char *argv[])
     }
     printf("\nalright that's all of the emails\n");
 
-    hc_list_destroy(&email_chain, NULL);
+    struct hc_destructor destructor = { 0 };
+    destructor.destructor = email_destructor;
+    hc_list_destroy(&email_chain, &destructor, NULL);
 
     return 0;
 }
@@ -107,7 +114,7 @@ static void email_destroy(struct email *const email)
     free(email);
 }
 
-static void list_destroy_email(void *const user_pointer, void *const data)
+static void email_destructor(void *const user_pointer, void *const data)
 {
     email_destroy(data);
 }
