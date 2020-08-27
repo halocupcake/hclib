@@ -10,6 +10,7 @@ add_library(hclib
     include/hclib/hc_destructor.h
     include/hclib/hc_allocator.h
     include/hclib/hc_list.h
+
     src/memory.h
     src/hc_list.c
 )
@@ -18,11 +19,11 @@ set_target_properties(hclib PROPERTIES
     POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS}
     VERSION ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR}
-    # PUBLIC_HEADER include/pail/pail.h
 )
 target_compile_features(hclib PUBLIC c_std_11)
 if(BUILD_SHARED_LIBS)
     target_compile_definitions(hclib PRIVATE HCLIB_EXPORTING)
+    # target_compile_definitions(hclib PUBLIC HCLIB_DLL)
 endif()
 
 install(TARGETS hclib

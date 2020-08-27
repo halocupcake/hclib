@@ -12,8 +12,10 @@ struct hc_allocator {
 
     void *(*allocate)(void *user_pointer, size_t size);
     void *(*allocate_aligned)(void *user_pointer, size_t size, size_t alignment);
-    void *(*reallocate)(void *user_pointer, void *data, size_t size);              // data can be NULL
-    void  (*free)(void *user_pointer, void *data);                                 // data can be NULL
+    void *(*reallocate)(void *user_pointer, void *data, size_t size);
+    void *(*reallocate_aligned)(void *user_pointer, void *data, size_t size, size_t alignment);
+    void  (*free)(void *user_pointer, void *data);
+    void  (*free_aligned)(void *user_pointer, void *data);
 };
 
 #ifdef __cplusplus
